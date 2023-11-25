@@ -11,7 +11,8 @@
 
 # Ignore all text files
 *.txt
-
+*.dat
+*data/
 # Ignore specific file
 *.mp4
 
@@ -25,3 +26,6 @@
 
 # Ignore all json file
 *.json
+
+# Ignore specific file
+definition_file.h
