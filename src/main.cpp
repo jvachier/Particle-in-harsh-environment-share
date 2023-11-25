@@ -23,6 +23,8 @@
 #include "headers/concentration_field_density.h"
 #include "headers/memory_allocation.h"
 #include "headers/delocate_memory.h"
+#include "headers/print_position.h"
+#include "headers/print_initial_position.h"
 
 using namespace std;
 
@@ -111,18 +113,11 @@ int main(int argc, char *argv[])
 	initialization(f, c, nx, ny, nz, z_0, dx, dy, dz, norm1, norm2);
 
 	// print the z-position t = 0
-	for (k = 0; k < nz; k++)
-	{
-		fprintf(initialz, "%.7f\t%.7f\n ", k * dz, f[25][25][k]);  // nx = ny = 50
-		fprintf(initialcz, "%.7f\t%.7f\n ", k * dz, c[25][25][k]); // nx = ny = 50
-	}
-
-	// print the x-position t = 0
-	for (i = 0; i < nx; i++)
-	{
-		fprintf(initialx, "%.7f\t%.7f\n ", i * dz, f[i][25][2132]); // ny = 50 nz = 1600
-		fprintf(initialcx, "%.7f\t%.e\n ", i * dz, c[i][25][2132]); // ny = 50 nz = 1600
-	}
+    print_initial_position(
+        f, c,
+        initialz, initialcz, initialx, initialcx,
+        dz, nx, nz
+    );
 
 	// initialization for these functions
 	initialization_fcts(advection, reaction, diffusion, nz, dz, AA, BB, D_a);
@@ -178,16 +173,11 @@ int main(int argc, char *argv[])
             );
 		}
 		// print out the z and x components
-		for (k = 0; k < nz; k++)
-		{
-			fprintf(fpz, "%lf\t%lf\n ", k * dz, f[25][25][k]); // nx = ny = 50
-			fprintf(fcz, "%lf\t%lf\n ", k * dz, c[25][25][k]); // nx = ny = 50
-		}
-		for (i = 0; i < nx; i++)
-		{
-			fprintf(fpx, "%lf\t%lf\n ", i * dz, f[i][25][2132]); // nx = 50 nz = 1600
-			fprintf(fcx, "%lf\t%e\n ", i * dz, c[i][25][2132]);	 // nx = 50 nz = 1600
-		}
+        print_position(
+            f, c,
+            fpz, fcz, fpx, fcx,
+            dz, nx, nz
+        );
 
 		fclose(fpz);
 		fclose(fpx);
@@ -200,7 +190,6 @@ int main(int argc, char *argv[])
 	printf("Simulation Done");
 
 	// deallocate memory
-	// DENSITY
     delocate_memory(
         f, f_n, c, c_n,
         nx, ny, nz

@@ -1,8 +1,8 @@
 CC = g++-13 -O3 -std=c++17
 CFLAGS = -Wall -g -fopenmp -fopenmp-simd
 
-main: main.o oldtonew.o concentration_field_density.o concentration_field.o initialization.o initialization_fcts.o memory_allocation.o delocate_memory.o
-	$(CC) $(CFLAGS) -o main.out main.o oldtonew.o concentration_field_density.o concentration_field.o initialization.o initialization_fcts.o memory_allocation.o delocate_memory.o
+main: main.o oldtonew.o concentration_field_density.o concentration_field.o initialization.o initialization_fcts.o memory_allocation.o delocate_memory.o print_position.o print_initial_position.o
+	$(CC) $(CFLAGS) -o main.out main.o oldtonew.o concentration_field_density.o concentration_field.o initialization.o initialization_fcts.o memory_allocation.o delocate_memory.o print_position.o print_initial_position.o
 
 main.o: main.cpp
 	$(CC) $(CFLAGS) -c main.cpp
@@ -27,6 +27,13 @@ memory_allocation.o: memory_allocation.cpp
 
 delocate_memory.o: delocate_memory.cpp
 	$(CC) $(CFLAGS) -c delocate_memory.cpp
+
+print_position.o: print_position.cpp
+	$(CC) $(CFLAGS) -c print_position.cpp
+
+print_initial_position.o: print_initial_position.cpp
+	$(CC) $(CFLAGS) -c print_initial_position.cpp
+
 
 clean:
 	rm *.o
