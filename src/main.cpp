@@ -22,6 +22,7 @@
 #include "headers/concentration_field.h"
 #include "headers/concentration_field_density.h"
 #include "headers/memory_allocation.h"
+#include "headers/delocate_memory.h"
 
 using namespace std;
 
@@ -200,44 +201,11 @@ int main(int argc, char *argv[])
 
 	// deallocate memory
 	// DENSITY
-	for (int i = 0; i < nx; i++)
-	{
-		for (int j = 0; j < ny; j++)
-		{
-			free(f[i][j]);
-		}
-		free(f[i]);
-	}
-	free(f);
-	for (int i = 0; i < nx; i++)
-	{
-		for (int j = 0; j < ny; j++)
-		{
-			free(f_n[i][j]);
-		}
-		free(f_n[i]);
-	}
-	free(f_n);
-	// CONCENTRATION
-	for (int i = 0; i < nx; i++)
-	{
-		for (int j = 0; j < ny; j++)
-		{
-			free(c[i][j]);
-		}
-		free(c[i]);
-	}
-	free(c);
-	for (int i = 0; i < nx; i++)
-	{
-		for (int j = 0; j < ny; j++)
-		{
-			free(c_n[i][j]);
-		}
-		free(c_n[i]);
-	}
-	free(c_n);
-
+    delocate_memory(
+        f, f_n, c, c_n,
+        nx, ny, nz
+    );
+	
 	fclose(initialz);
 	fclose(initialx);
 	fclose(initialcz);
