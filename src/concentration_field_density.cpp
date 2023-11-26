@@ -13,7 +13,7 @@ void concentration_field_density(
     double Fx, double Fy, double Fz, double Fxx, double Fyy, double Fzz
 )
 {
-#pragma omp parallel for simd collapse(3) num_threads(10)
+#pragma omp parallel for simd collapse(3) 
 	for (int i = 1; i < nx - 1; i++)
 	{
 		for (int j = 1; j < ny - 1; j++)

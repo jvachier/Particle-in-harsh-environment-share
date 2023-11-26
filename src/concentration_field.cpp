@@ -8,7 +8,7 @@ void concentration_field(
     double c_xx, double c_yy, double c_zz, double D_c, double Cxx, double Cyy, double Czz
 )
 {
-#pragma omp parallel for simd collapse(3) num_threads(10)
+#pragma omp parallel for simd collapse(3) 
 	for (int i = 1; i < nx - 1; i++)
 	{
 		for (int j = 1; j < ny - 1; j++)
