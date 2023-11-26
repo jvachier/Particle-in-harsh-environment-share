@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 	double advection[nz];
 	double reaction[nz];
 	double diffusion[nz];
-	int i, j, k, n;
+	int n;
 	double Fx = dt / dx;
 	double Fy = dt / dy;
 	double Fz = dt / dz;
