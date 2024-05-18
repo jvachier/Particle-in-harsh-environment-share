@@ -34,14 +34,17 @@ int main(int argc, char *argv[]) {
 
   // beta positive
   /*
-  initialz	= fopen ("./data/pz_z_initial_100D_N100_0y_30_08_2022_betap_para.dat", "w");
-  initialx	= fopen ("./data/px_x_initial_100D_N100_0y_30_08_2022_betap_para.dat", "w");
-  initialcz	= fopen ("./data/c_cz_initial_100D_N100_0y_30_08_2022_betap_para.dat", "w");
-  initialcx = fopen ("./data/c_cx_initial_100D_N100_0y_30_08_2022_betap_para.dat", "w");
+  initialz = fopen("./data/pz_z_initial_100D_"\
+    "N100_0y_30_08_2022_betap_para.dat", "w");
+  initialx = fopen("./data/px_x_initial_100D_"\
+    "N100_0y_30_08_2022_betap_para.dat", "w");
+  initialcz = fopen("./data/c_cz_initial_100D_"\
+    "N100_0y_30_08_2022_betap_para.dat", "w");
+  initialcx = fopen("./data/c_cx_initial_100D_"\
+    "N100_0y_30_08_2022_betap_para.dat", "w");
   */
 
   // beta negative
-
   initialz = fopen("./data/pz_z_initial_100D_"\
     "N100_0y_30_08_2022_betan_para.dat", "w");
   initialx = fopen("./data/px_x_initial_100D_"\
@@ -57,7 +60,7 @@ int main(int argc, char *argv[]) {
   double A_2 = (rho_l * q_m * delaT) / T_m;
   double AA = A_3 / pow(A_2, 3);
   double BB = (pow(R_g * T_m * N_i, 3) /\
-  (8. * PI * nu * pow(R, 4) * pow(A_2, 3))) * kb * T_m;
+    (8. * PI * nu * pow(R, 4) * pow(A_2, 3))) * kb * T_m;
   double D_a = 100.0 * BB;
   // chemotaxis
   double beta = -1e-10;
@@ -142,7 +145,7 @@ int main(int argc, char *argv[]) {
     FILE *fpz, *fpx, *fcz, *fcx;
     // beta positive
     /*
-	snprintf(namepz, sizeof(namepz), "./data/pz_100D_N100_"\
+	  snprintf(namepz, sizeof(namepz), "./data/pz_100D_N100_"\
       "30_08_2022_betap_para_%d.dat", year);
     snprintf(namepx, sizeof(namepx), "./data/px_100D_N100_"\
       "30_08_2022_betap_para_%d.dat", year);
