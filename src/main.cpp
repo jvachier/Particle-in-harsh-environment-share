@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
   initialz	= fopen ("./data/pz_z_initial_100D_N100_0y_30_08_2022_betap_para.dat", "w");
   initialx	= fopen ("./data/px_x_initial_100D_N100_0y_30_08_2022_betap_para.dat", "w");
   initialcz	= fopen ("./data/c_cz_initial_100D_N100_0y_30_08_2022_betap_para.dat", "w");
-  initialcx       = fopen ("./data/c_cx_initial_100D_N100_0y_30_08_2022_betap_para.dat", "w");
+  initialcx = fopen ("./data/c_cx_initial_100D_N100_0y_30_08_2022_betap_para.dat", "w");
   */
 
   // beta negative
