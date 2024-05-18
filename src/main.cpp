@@ -72,9 +72,10 @@ int main(int argc, char *argv[]) {
   int dt = 1e5;
   double norm1 = (PI * 7.926);
   double norm2 = (pow(PI, 3 / 2));
-  double advection[nz];
-  double reaction[nz];
-  double diffusion[nz];
+
+  double *advection = new double[nz];
+  double *reaction = new double[nz];
+  double *diffusion = new double[nz];
   int n;
   double Fx = dt / dx;
   double Fy = dt / dy;
