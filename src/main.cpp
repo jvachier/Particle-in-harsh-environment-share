@@ -5,15 +5,14 @@
  * Language: 	C++
  * Date: 	2021-2022
  */
-
-#include <iostream>
-#include <random>
-#include <string>
-#include <cmath>
 #include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <omp.h>
+#include <iostream>
+#include <random>
+#include <string>
+#include <cmath>
 
 #include "headers/definition_file.h"
 #include "headers/initialization.h"
