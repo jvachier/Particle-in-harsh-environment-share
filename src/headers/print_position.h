@@ -8,7 +8,6 @@
 #include <omp.h>
 
 void print_position(
-    double ***f, double ***c,
-    FILE *fpz, FILE *fcz, FILE *fpx, FILE *fcx,
-    double dz, int nx, int nz
-);
+  double ***f, double ***c,
+  FILE *fpz, FILE *fcz, FILE *fpx, FILE *fcx,
+  double dz, int nx, int nz);
