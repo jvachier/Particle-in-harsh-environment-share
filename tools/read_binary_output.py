@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """
 Binary Output Reader for Fokker-Planck Simulation
 
@@ -57,9 +56,9 @@ def save_as_csv(positions, values, output_file):
     """Save data as CSV file."""
     import csv
 
-    with open(output_file, 'w', newline='') as f:
-        writer = csv.writer(f, delimiter='\t')
-        writer.writerow(['Position', 'Value'])
+    with open(output_file, "w", newline="") as f:
+        writer = csv.writer(f, delimiter="\t")
+        writer.writerow(["Position", "Value"])
         for pos, val in zip(positions, values):
             writer.writerow([pos, val])
 
@@ -71,8 +70,10 @@ def plot_data(files, labels=None):
     try:
         import matplotlib.pyplot as plt
     except ImportError:
-        print("Error: matplotlib not installed. Install with: pip install matplotlib",
-              file=sys.stderr)
+        print(
+            "Error: matplotlib not installed. Install with: pip install matplotlib",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     plt.figure(figsize=(10, 6))
@@ -80,11 +81,11 @@ def plot_data(files, labels=None):
     for i, filename in enumerate(files):
         positions, values = read_binary_file(filename)
         label = labels[i] if labels else Path(filename).stem
-        plt.plot(positions, values, label=label, marker='o', markersize=2)
+        plt.plot(positions, values, label=label, marker="o", markersize=2)
 
-    plt.xlabel('Position')
-    plt.ylabel('Value')
-    plt.title('Simulation Output')
+    plt.xlabel("Position")
+    plt.ylabel("Value")
+    plt.title("Simulation Output")
     plt.legend()
     plt.grid(True, alpha=0.3)
     plt.tight_layout()
@@ -105,16 +106,16 @@ def print_statistics(positions, values, filename):
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Read and analyze binary simulation output',
+        description="Read and analyze binary simulation output",
         formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog=__doc__
+        epilog=__doc__,
     )
 
-    parser.add_argument('files', nargs='+', help='Binary file(s) to read')
-    parser.add_argument('--csv', help='Save as CSV file')
-    parser.add_argument('--plot', action='store_true', help='Plot the data')
-    parser.add_argument('--stats', action='store_true', help='Print statistics')
-    parser.add_argument('--labels', nargs='+', help='Labels for plot legend')
+    parser.add_argument("files", nargs="+", help="Binary file(s) to read")
+    parser.add_argument("--csv", help="Save as CSV file")
+    parser.add_argument("--plot", action="store_true", help="Plot the data")
+    parser.add_argument("--stats", action="store_true", help="Print statistics")
+    parser.add_argument("--labels", nargs="+", help="Labels for plot legend")
 
     args = parser.parse_args()
 
@@ -156,5 +157,5 @@ def main():
                 print_statistics(positions, values, filename)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

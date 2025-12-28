@@ -47,6 +47,14 @@ tests/*.o
 tests/*.out
 tests/test_*.dat
 
+# Visualization outputs
+*.html
+!docs/*.html
+
 # Output directories
 results/
 output/
+
+# Environment files
+.venv
+.env

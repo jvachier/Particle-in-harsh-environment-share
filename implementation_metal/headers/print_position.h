@@ -14,6 +14,7 @@
 int print_position(
   const double *f, const double *c,
   FILE *fpz, FILE *fcz, FILE *fpx, FILE *fcx,
+  FILE *fpy, FILE *fcy,
   double dz, int nx, int ny, int nz,
   int sample_x, int sample_y, int sample_z);
 

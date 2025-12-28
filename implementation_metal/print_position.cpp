@@ -9,6 +9,7 @@ using namespace std;
 int print_position(
     const double *f, const double *c,
     FILE *fpz, FILE *fcz, FILE *fpx, FILE *fcx,
+    FILE *fpy, FILE *fcy,
     double dz, int nx, int ny, int nz,
     int sample_x, int sample_y, int sample_z) {
   // Input validation
@@ -16,7 +17,7 @@ int print_position(
     fprintf(stderr, "Error: NULL array pointer\n");
     return -1;
   }
-  if (!fpz || !fcz || !fpx || !fcx) {
+  if (!fpz || !fcz || !fpx || !fcx || !fpy || !fcy) {
     fprintf(stderr, "Error: NULL file pointer\n");
     return -1;
   }
@@ -60,6 +61,24 @@ int print_position(
     if (fwrite(&x_pos, sizeof(double), 1, fcx) != 1 ||
         fwrite(&c_val, sizeof(double), 1, fcx) != 1) {
       fprintf(stderr, "Error: Failed to write binary x-profile (c) at i=%d\n", i);
+      return -1;
+    }
+  }
+
+  // Write y-direction profiles at fixed (x,z) = (sample_x, sample_z)
+  for (int j = 0; j < ny; j++) {
+    double y_pos = j * dz;
+    double f_val = f[IDX3D(sample_x, j, sample_z, ny, nz)];
+    double c_val = c[IDX3D(sample_x, j, sample_z, ny, nz)];
+
+    if (fwrite(&y_pos, sizeof(double), 1, fpy) != 1 ||
+        fwrite(&f_val, sizeof(double), 1, fpy) != 1) {
+      fprintf(stderr, "Error: Failed to write binary y-profile (f) at j=%d\n", j);
+      return -1;
+    }
+    if (fwrite(&y_pos, sizeof(double), 1, fcy) != 1 ||
+        fwrite(&c_val, sizeof(double), 1, fcy) != 1) {
+      fprintf(stderr, "Error: Failed to write binary y-profile (c) at j=%d\n", j);
       return -1;
     }
   }

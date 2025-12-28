@@ -30,16 +30,12 @@ fi
 # Check if binaries exist
 if [ ! -f "implementation_pragma/main_pragma.out" ]; then
     echo -e "${YELLOW}⚠ Pragma binary not found. Building...${NC}"
-    cd implementation_pragma
-    make clean && make
-    cd ..
+    make pragma
 fi
 
 if [ ! -f "implementation_metal/main_metal.out" ]; then
     echo -e "${YELLOW}⚠ Metal binary not found. Building...${NC}"
-    cd implementation_metal
-    make clean && make
-    cd ..
+    make metal
 fi
 
 # Create data directories for each implementation
@@ -58,16 +54,23 @@ echo "════════════════════════�
 echo ""
 
 # Extract configuration from header (if available)
-if [ -f "config/simulation_config.h" ]; then
-    NX=$(grep "^#define NX" config/simulation_config.h | awk '{print $3}')
-    NY=$(grep "^#define NY" config/simulation_config.h | awk '{print $3}')
-    NZ=$(grep "^#define NZ" config/simulation_config.h | awk '{print $3}')
-    NT=$(grep "^#define NT" config/simulation_config.h | awk '{print $3}')
-    ALPHA=$(grep "^#define ALPHA" config/simulation_config.h | awk '{print $3}')
+if [ -f "config/simulation_parameters.h" ]; then
+    NX=$(grep "int nx =" config/simulation_parameters.h | awk '{print $4}' | tr -d ';')
+    NY=$(grep "int ny =" config/simulation_parameters.h | awk '{print $4}' | tr -d ';')
+    NZ=$(grep "int nz =" config/simulation_parameters.h | awk '{print $4}' | tr -d ';')
+    NT=$(grep "int nt =" config/simulation_parameters.h | awk '{print $4}' | tr -d ';')
+    NUM_YEARS=$(grep "int num_years =" config/simulation_parameters.h | awk '{print $4}' | tr -d ';')
+    DT=$(grep "double dt =" config/simulation_parameters.h | awk '{print $4}' | tr -d ';')
+
+    # Calculate years per iteration
+    YEARS_PER_ITER=$(echo "scale=1; ($NT * $DT) / (365.25 * 24 * 3600)" | bc)
+    TOTAL_YEARS=$(echo "scale=1; $YEARS_PER_ITER * $NUM_YEARS" | bc)
 
     echo "Grid size: ${NX}×${NY}×${NZ}"
-    echo "Time steps per year: ${NT}"
-    echo "Years to simulate: ${ALPHA}"
+    echo "Time steps per iteration: ${NT}"
+    echo "Number of iterations: ${NUM_YEARS}"
+    echo "Years per iteration: ${YEARS_PER_ITER}"
+    echo "Total years simulated: ${TOTAL_YEARS}"
     echo ""
 fi
 
@@ -186,13 +189,14 @@ echo "To view details:"
 echo "  cat pragma_timing.log"
 echo "  cat metal_timing.log"
 echo ""
-echo "To analyze output data:"
+echo "To visualize output data:"
+echo "  cd tools"
 echo "  # Pragma SIMD results:"
-echo "  python tools/visualize_simulation.py data/pragma/*.bin --stats"
+echo "  uv run python visualize_simulation.py ../data/pragma/*.bin"
 echo "  # Metal GPU results:"
-echo "  python tools/visualize_simulation.py data/metal/*.bin --stats"
-echo "  # Compare implementations:"
-echo "  python tools/visualize_simulation.py data/pragma/*.bin data/metal/*.bin --compare"
+echo "  uv run python visualize_simulation.py ../data/metal/*.bin"
+echo "  # Or just use default (metal):"
+echo "  uv run python visualize_simulation.py"
 echo ""
 
 # Create summary file
@@ -205,7 +209,10 @@ CPU: $(sysctl -n machdep.cpu.brand_string)
 
 Configuration:
 - Grid size: ${NX:-50}×${NY:-50}×${NZ:-1600}
-- Years simulated: ${ALPHA:-1}
+- Time steps per iteration: ${NT:-15768}
+- Number of iterations: ${NUM_YEARS:-12}
+- Years per iteration: ${YEARS_PER_ITER:-50.0}
+- Total years simulated: ${TOTAL_YEARS:-600.0}
 
 Results:
 - Pragma SIMD: ${PRAGMA_REAL}s (${PRAGMA_MEM} MB peak memory)

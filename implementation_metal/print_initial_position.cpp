@@ -8,6 +8,7 @@ using namespace std;
 void print_initial_position(
   const double *f, const double *c,
   FILE *initialz, FILE *initialcz, FILE *initialx, FILE *initialcx,
+  FILE *initialy, FILE *initialcy,
   double dz, int nx, int ny, int nz,
   int sample_x, int sample_y, int sample_z) {
 
@@ -36,5 +37,18 @@ void print_initial_position(
 
     fwrite(&x_pos, sizeof(double), 1, initialcx);
     fwrite(&c_val, sizeof(double), 1, initialcx);
+  }
+
+  // Write y-direction initial profiles (binary format)
+  for (int j = 0; j < ny; j++) {
+    double y_pos = j * dz;
+    double f_val = f[IDX3D(sample_x, j, sample_z, ny, nz)];
+    double c_val = c[IDX3D(sample_x, j, sample_z, ny, nz)];
+
+    fwrite(&y_pos, sizeof(double), 1, initialy);
+    fwrite(&f_val, sizeof(double), 1, initialy);
+
+    fwrite(&y_pos, sizeof(double), 1, initialcy);
+    fwrite(&c_val, sizeof(double), 1, initialcy);
   }
 }

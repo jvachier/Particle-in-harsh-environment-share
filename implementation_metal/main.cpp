@@ -30,7 +30,7 @@ using namespace std;
 using namespace SimulationConfig;
 
 int main(int argc, char *argv[]) {
-  FILE *initialz, *initialx, *initialcz, *initialcx;
+  FILE *initialz, *initialx, *initialy, *initialcz, *initialcx, *initialcy;
 
   // Load configuration from command line arguments
   Configuration config = load_config_from_args(argc, argv);
@@ -60,9 +60,13 @@ int main(int argc, char *argv[]) {
     "N100_0y_30_08_2022_betan_para.bin", "wb");
   initialx = fopen("../data/metal/px_x_initial_100D_"\
     "N100_0y_30_08_2022_betan_para.bin", "wb");
+  initialy = fopen("../data/metal/py_y_initial_100D_"\
+    "N100_0y_30_08_2022_betan_para.bin", "wb");
   initialcz = fopen("../data/metal/c_cz_initial_100D_"\
     "N100_0y_30_08_2022_betan_para.bin", "wb");
   initialcx = fopen("../data/metal/c_cx_initial_100D_"\
+    "N100_0y_30_08_2022_betan_para.bin", "wb");
+  initialcy = fopen("../data/metal/c_cy_initial_100D_"\
     "N100_0y_30_08_2022_betan_para.bin", "wb");
 
   // Load parameters from runtime config
@@ -123,7 +127,7 @@ int main(int argc, char *argv[]) {
   // print the z-position t = 0
   print_initial_position(
     f, c,
-    initialz, initialcz, initialx, initialcx,
+    initialz, initialcz, initialx, initialcx, initialy, initialcy,
     dz, nx, ny, nz,
     25, 25, 800);  // Sample points: middle of grid in x,y and z=800
 
@@ -140,11 +144,12 @@ int main(int argc, char *argv[]) {
   char namecz[100];  // name for the file
   char namecx[100];  // name for the file
   int year = 0;
+
   while (bound < config.time.num_years * nt) {
     year += 50;
     printf("year %d\n", year);
     // open files
-    FILE *fpz, *fpx, *fcz, *fcx;
+    FILE *fpz, *fpx, *fpy, *fcz, *fcx, *fcy;
     // beta positive
     /*
 	  snprintf(namepz, sizeof(namepz), "./data/pz_100D_N100_"\
@@ -162,15 +167,23 @@ int main(int argc, char *argv[]) {
       "30_08_2022_betan_para_%d.bin", year);
     snprintf(namepx, sizeof(namepx), "../data/metal/px_100D_N100_"\
       "30_08_2022_betan_para_%d.bin", year);
+    char namepy[100];
+    snprintf(namepy, sizeof(namepy), "../data/metal/py_100D_N100_"\
+      "30_08_2022_betan_para_%d.bin", year);
     snprintf(namecz, sizeof(namecz), "../data/metal/cz_100D_N100_"\
       "30_08_2022_betan_para_%d.bin", year);
     snprintf(namecx, sizeof(namecx), "../data/metal/cx_100D_N100_"\
       "30_08_2022_betan_para_%d.bin", year);
+    char namecy[100];
+    snprintf(namecy, sizeof(namecy), "../data/metal/cy_100D_N100_"\
+      "30_08_2022_betan_para_%d.bin", year);
 
     fpz = fopen(namepz, "wb");
     fpx = fopen(namepx, "wb");
+    fpy = fopen(namepy, "wb");
     fcz = fopen(namecz, "wb");
     fcx = fopen(namecx, "wb");
+    fcy = fopen(namecy, "wb");
 
     for (n = bound; n < count * nt; n++) {
       // old value to the new one
@@ -205,13 +218,15 @@ int main(int argc, char *argv[]) {
     // Using improved version with configurable sample points
     print_position(
       f, c,
-      fpz, fcz, fpx, fcx,
+      fpz, fcz, fpx, fcx, fpy, fcy,
       dz, nx, ny, nz, 25, 25, 800);  // Fixed: was 2132 (out of bounds for nz=1600)
 
     fclose(fpz);
     fclose(fpx);
+    fclose(fpy);
     fclose(fcz);
     fclose(fcx);
+    fclose(fcy);
     bound += nt;
     count++;
   }

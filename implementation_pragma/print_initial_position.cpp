@@ -7,6 +7,7 @@ using namespace std;
 void print_initial_position(
   double ***f, double ***c,
   FILE *initialz, FILE *initialcz, FILE *initialx, FILE *initialcx,
+  FILE *initialy, FILE *initialcy,
   double dz, int nx, int ny, int nz,
   int sample_x, int sample_y, int sample_z) {
 
@@ -35,5 +36,18 @@ void print_initial_position(
 
     fwrite(&x_pos, sizeof(double), 1, initialcx);
     fwrite(&c_val, sizeof(double), 1, initialcx);
+  }
+
+  // Write y-direction initial profiles (binary format)
+  for (int j = 0; j < ny; j++) {
+    double y_pos = j * dz;
+    double f_val = f[sample_x][j][sample_z];
+    double c_val = c[sample_x][j][sample_z];
+
+    fwrite(&y_pos, sizeof(double), 1, initialy);
+    fwrite(&f_val, sizeof(double), 1, initialy);
+
+    fwrite(&y_pos, sizeof(double), 1, initialcy);
+    fwrite(&c_val, sizeof(double), 1, initialcy);
   }
 }
