@@ -281,20 +281,29 @@ def plot_3d_animated(data_list: List[SimulationData], output_dir: str = ".", max
                 # Create 2D surface: outer product of x and y profiles
                 X, Y = np.meshgrid(x_dataset.positions, y_dataset.positions)
 
-                # IMPORTANT: For highly anisotropic data (e.g., density concentrated in z),
-                # we scale the outer product to match the z-profile magnitude
-                # This ensures the surface is visible even when x,y values are very small
-                xy_product = np.outer(y_norm, x_norm)
+                # Different strategies for concentration vs density
+                if field_type == "p":
+                    # For density (highly anisotropic): sum of 1D profiles
+                    # This creates a surface where the height represents combined probability
+                    xy_sum = np.zeros((len(y_norm), len(x_norm)))
+                    for i in range(len(y_norm)):
+                        for j in range(len(x_norm)):
+                            # Add contributions from x and y profiles
+                            xy_sum[i, j] = x_norm[j] + y_norm[i]
 
-                # Normalize xy_product to have max=1, then scale by z value
-                if xy_product.max() > 0:
-                    xy_product_normalized = xy_product / xy_product.max()
+                    # Normalize and scale to make visible
+                    if xy_sum.max() > 0:
+                        Z_surface = (xy_sum / xy_sum.max()) * 0.1  # Scale to 0.1 max height
+                    else:
+                        Z_surface = xy_sum
                 else:
-                    xy_product_normalized = xy_product
-
-                # Use z value at middle of domain
-                mid_z_idx = len(z_dataset.positions) // 2
-                Z_surface = xy_product_normalized * z_normalized[mid_z_idx]
+                    # For concentration: use outer product (works well for c)
+                    xy_product = np.outer(y_norm, x_norm)
+                    if xy_product.max() > 0:
+                        xy_product_normalized = xy_product / xy_product.max()
+                    else:
+                        xy_product_normalized = xy_product
+                    Z_surface = xy_product_normalized * z_normalized.max()
 
             else:
                 # Fallback: use z-profile value across xy plane
