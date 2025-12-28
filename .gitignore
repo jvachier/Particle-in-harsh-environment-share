@@ -1,31 +1,52 @@
-# Ignore Mac system files
-*.DS_store
-*.dSYM
-
-# Ignore all csv files
-*.csv
-
-# Ignore all png files
-# *.png
-*.html
-
-# Ignore all text files
-*.txt
-*.dat
-*data/
-# Ignore specific file
-*.mp4
-
-# Ignore all executable files
+# Build artifacts
 *.o
 *.out
+*.exe
+*.a
+*.so
+*.dylib
 
-# Ignore jupyter checkpoints
-*.ipynb_checkpoints
-*.ipynb
+# Metal compiled shaders
+*.metallib
+*.air
 
-# Ignore all json file
-*.json
+# Data files
+data/pragma/*.dat
+data/pragma/*.bin
+data/metal/*.dat
+data/metal/*.bin
+*.dat
+*.bin
 
-# Ignore specific file
-definition_file.h
+# Log files
+*.log
+performance_summary.txt
+
+# Temporary files
+/tmp/
+*.tmp
+*.swp
+*.swo
+*~
+
+# IDE files
+.vscode/
+.idea/
+*.code-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Deprecated source (keep in git but ignore builds)
+src/*.o
+src/*.out
+
+# Test outputs
+tests/*.o
+tests/*.out
+tests/test_*.dat
+
+# Output directories
+results/
+output/

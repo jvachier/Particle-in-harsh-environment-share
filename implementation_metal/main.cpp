@@ -14,6 +14,7 @@
 #include <string>
 #include <cmath>
 
+#include "../config/simulation_parameters.h"  // Runtime configuration
 #include "headers/definition_file.h"
 #include "headers/initialization.h"
 #include "headers/initialization_fcts.h"
@@ -26,11 +27,18 @@
 #include "headers/print_initial_position.h"
 
 using namespace std;
+using namespace SimulationConfig;
 
 int main(int argc, char *argv[]) {
   FILE *initialz, *initialx, *initialcz, *initialcx;
 
-  omp_set_num_threads(N_thread);
+  // Load configuration from command line arguments
+  Configuration config = load_config_from_args(argc, argv);
+
+  // Print configuration summary
+  config.print_summary();
+
+  omp_set_num_threads(config.compute.num_threads);
 
   // beta positive
   /*
@@ -44,37 +52,36 @@ int main(int argc, char *argv[]) {
     "N100_0y_30_08_2022_betap_para.dat", "w");
   */
 
-  // beta negative
-  initialz = fopen("./data/pz_z_initial_100D_"\
-    "N100_0y_30_08_2022_betan_para.dat", "w");
-  initialx = fopen("./data/px_x_initial_100D_"\
-    "N100_0y_30_08_2022_betan_para.dat", "w");
-  initialcz = fopen("./data/c_cz_initial_100D_"\
-    "N100_0y_30_08_2022_betan_para.dat", "w");
-  initialcx = fopen("./data/c_cx_initial_100D_"\
-    "N100_0y_30_08_2022_betan_para.dat", "w");
+  // beta negative - using binary format (.bin) for initial positions
+  // Create data directory if it doesn't exist
+  system("mkdir -p ../data/metal");
 
-  // parameters
-  double z_0 = 60.0;
-  double A_3 = rhosq_m * delaT * pow(R_g * T_m * N_i, 2) / (6.0 * nu * R * T_m);
-  double A_2 = (rho_l * q_m * delaT) / T_m;
-  double AA = A_3 / pow(A_2, 3);
-  double BB = (pow(R_g * T_m * N_i, 3) /\
-    (8. * PI * nu * pow(R, 4) * pow(A_2, 3))) * kb * T_m;
-  double D_a = 100.0 * BB;
-  // chemotaxis
-  double beta = -1e-10;
-  double D_c = 1e-10;
-  int nz = 1600;
-  double dz = 80.0 / nz;
-  int ny = 50;   // need to be equal to nx
-  double dy = 10.0 / ny;  // need to be equal to nx
-  int nx = 50;
-  double dx = 10.0 / nx;
-  int nt = 31536 / 2;  // 50years with dt 1E5
-  int dt = 1e5;
-  double norm1 = (PI * 7.926);
-  double norm2 = (pow(PI, 3 / 2));
+  initialz = fopen("../data/metal/pz_z_initial_100D_"\
+    "N100_0y_30_08_2022_betan_para.bin", "wb");
+  initialx = fopen("../data/metal/px_x_initial_100D_"\
+    "N100_0y_30_08_2022_betan_para.bin", "wb");
+  initialcz = fopen("../data/metal/c_cz_initial_100D_"\
+    "N100_0y_30_08_2022_betan_para.bin", "wb");
+  initialcx = fopen("../data/metal/c_cx_initial_100D_"\
+    "N100_0y_30_08_2022_betan_para.bin", "wb");
+
+  // Load parameters from runtime config
+  double z_0 = config.chemistry.z_0;
+  double AA = config.get_AA();
+  double BB = config.get_BB();
+  double D_a = config.get_D_a();
+  double beta = config.chemistry.beta;
+  double D_c = config.chemistry.D_c;
+  int nz = config.grid.nz;
+  double dz = config.grid.get_dz();
+  int ny = config.grid.ny;
+  double dy = config.grid.get_dy();
+  int nx = config.grid.nx;
+  double dx = config.grid.get_dx();
+  int nt = config.time.nt;
+  double dt = config.time.dt;
+  double norm1 = config.get_norm1();
+  double norm2 = config.get_norm2();
 
   double *advection = new double[nz];
   double *reaction = new double[nz];
@@ -92,28 +99,22 @@ int main(int argc, char *argv[]) {
   double Cxx = dt / (dx * dx);
   double Cyy = dt / (dy * dy);
   double Czz = dt / (dz * dz);
-  double u_x, u_y, u_z, u_xx, u_yy, u_zz;
-  double c_x, c_y, c_z, c_xx, c_yy, c_zz;
+  double u_x = 0.0, u_y = 0.0, u_z = 0.0, u_xx = 0.0, u_yy = 0.0, u_zz = 0.0;
+  double c_x = 0.0, c_y = 0.0, c_z = 0.0, c_xx = 0.0, c_yy = 0.0, c_zz = 0.0;
   int count, bound;
 
   // Open MP to get execution time
   double itime, ftime, exec_time;
   itime = omp_get_wtime();
-  // 3D array declaration
-  // DENSITY ARRAY
-  double ***f = reinterpret_cast<double***>\
-    (malloc(nx * sizeof(double **)));
-  double ***f_n = reinterpret_cast<double***>\
-    (malloc(nx * sizeof(double **)));
 
-  // CONCENTRATION ARRAY - use the same size than DENSITY ARRAY
-  double ***c = reinterpret_cast<double***>\
-    (malloc(nx * sizeof(double **)));
-  double ***c_n = reinterpret_cast<double***>\
-    (malloc(nx * sizeof(double **)));
+  // 3D array declaration - using linear arrays for zero-copy GPU transfers
+  double *f = nullptr;
+  double *f_n = nullptr;
+  double *c = nullptr;
+  double *c_n = nullptr;
 
   memory_allocation_cn(
-    c_n, c, f_n, f,
+    &c_n, &c, &f_n, &f,
     nx, ny, nz);
   // initialization DENSITY
   printf("%e\t%lf\t%e\n", BB, AA, D_a);
@@ -123,7 +124,8 @@ int main(int argc, char *argv[]) {
   print_initial_position(
     f, c,
     initialz, initialcz, initialx, initialcx,
-    dz, nx, nz);
+    dz, nx, ny, nz,
+    25, 25, 800);  // Sample points: middle of grid in x,y and z=800
 
   // initialization for these functions
   initialization_fcts(advection, reaction, diffusion, nz, dz, AA, BB, D_a);
@@ -138,7 +140,7 @@ int main(int argc, char *argv[]) {
   char namecz[100];  // name for the file
   char namecx[100];  // name for the file
   int year = 0;
-  while (bound < alpha * nt) {
+  while (bound < config.time.num_years * nt) {
     year += 50;
     printf("year %d\n", year);
     // open files
@@ -154,28 +156,42 @@ int main(int argc, char *argv[]) {
     snprintf(namecx, sizeof(namecx), "./data/cx_100D_N100_"\
       "30_08_2022_betap_para_%d.dat", year);
     */
-    // beta negative
+    // beta negative - using binary format (.bin) for faster I/O and smaller files
 
-    snprintf(namepz, sizeof(namepz), "./data/pz_100D_N100_"\
-      "30_08_2022_betan_para_%d.dat", year);
-    snprintf(namepx, sizeof(namepx), "./data/px_100D_N100_"\
-      "30_08_2022_betan_para_%d.dat", year);
-    snprintf(namecz, sizeof(namecz), "./data/cz_100D_N100_"\
-      "30_08_2022_betan_para_%d.dat", year);
-    snprintf(namecx, sizeof(namecx), "./data/cx_100D_N100_"\
-      "30_08_2022_betan_para_%d.dat", year);
+    snprintf(namepz, sizeof(namepz), "../data/metal/pz_100D_N100_"\
+      "30_08_2022_betan_para_%d.bin", year);
+    snprintf(namepx, sizeof(namepx), "../data/metal/px_100D_N100_"\
+      "30_08_2022_betan_para_%d.bin", year);
+    snprintf(namecz, sizeof(namecz), "../data/metal/cz_100D_N100_"\
+      "30_08_2022_betan_para_%d.bin", year);
+    snprintf(namecx, sizeof(namecx), "../data/metal/cx_100D_N100_"\
+      "30_08_2022_betan_para_%d.bin", year);
 
-    fpz = fopen(namepz, "w");
-    fpx = fopen(namepx, "w");
-    fcz = fopen(namecz, "w");
-    fcx = fopen(namecx, "w");
+    fpz = fopen(namepz, "wb");
+    fpx = fopen(namepx, "wb");
+    fcz = fopen(namecz, "wb");
+    fcx = fopen(namecx, "wb");
 
     for (n = bound; n < count * nt; n++) {
       // old value to the new one
       oldtonew(c_n, f_n, c, f, nx, ny, nz);
-      // update new value
-      concentration_field(c_n, c, nx, ny, nz, \
+
+      // update new value - concentration field
+      // Use CPU version - simple operation, not worth GPU transfer overhead
+      concentration_field(c_n, c, nx, ny, nz,
         c_xx, c_yy, c_zz, D_c, Cxx, Cyy, Czz);
+
+#ifdef __APPLE__
+      // Use Metal GPU accelerated version for density
+      concentration_field_density_metal(
+        c, f, f_n, advection, reaction,
+        diffusion, nx, ny, nz, dt, beta,
+        c_x, c_y, c_z, c_xx, c_yy, c_zz,
+        u_x, u_y, u_z, u_xx, u_yy, u_zz,
+        Cx, Cy, Cz, Cxx, Cyy, Czz, Fx, Fy,
+        Fz, Fxx, Fyy, Fzz);
+#else
+      // Fallback to CPU version on non-Apple platforms
       concentration_field_density(
         c, f, f_n, advection, reaction,
         diffusion, nx, ny, nz, dt, beta,
@@ -183,12 +199,14 @@ int main(int argc, char *argv[]) {
         u_x, u_y, u_z, u_xx, u_yy, u_zz,
         Cx, Cy, Cz, Cxx, Cyy, Czz, Fx, Fy,
         Fz, Fxx, Fyy, Fzz);
+#endif
     }
     // print out the z and x components
+    // Using improved version with configurable sample points
     print_position(
       f, c,
       fpz, fcz, fpx, fcx,
-      dz, nx, nz);
+      dz, nx, ny, nz, 25, 25, 800);  // Fixed: was 2132 (out of bounds for nz=1600)
 
     fclose(fpz);
     fclose(fpx);
@@ -198,7 +216,7 @@ int main(int argc, char *argv[]) {
     count++;
   }
 
-  printf("Simulation Done");
+  printf("Simulation Done\n");
 
   // deallocate memory
   delocate_memory(
@@ -214,6 +232,11 @@ int main(int argc, char *argv[]) {
   ftime = omp_get_wtime();
   exec_time = ftime - itime;
   printf("Time taken is %f", exec_time);
+
+#ifdef __APPLE__
+  // Cleanup Metal resources
+  cleanup_metal();
+#endif
 
   return 0;
 }

@@ -7,7 +7,7 @@
 #include <string>
 #include <cmath>
 
-void print_position(
-  double ***f, double ***c,
-  FILE *fpz, FILE *fcz, FILE *fpx, FILE *fcx,
-  double dz, int nx, int nz);
+void initialization_fcts(
+  double *advection, double *reaction, double *diffusion,
+  int nz,
+  double dz, double AA, double BB, double D_a);

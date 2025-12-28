@@ -1,0 +1,39 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+      - '.github/workflows/README.md'
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y g++-13 libomp-dev
+
+    - name: Build pragma implementation
+      run: |
+        cd implementation_pragma
+        make clean
+        make
+
+    - name: Verify binary created
+      run: |
+        ls -lh implementation_pragma/main_pragma.out
+        echo "Build completed successfully!"
