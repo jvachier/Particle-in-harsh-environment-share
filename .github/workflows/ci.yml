@@ -1,0 +1,63 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+  pull_request:
+    branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - 'docs/**'
+
+jobs:
+  build-test-pragma:
+    name: Build and Test Pragma SIMD (CPU)
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y g++-13 libomp-dev make
+
+    - name: Build Pragma SIMD implementation
+      run: |
+        make clean-pragma
+        make pragma
+
+    - name: Verify binary created
+      run: |
+        ls -lh implementation_pragma/main_pragma.out
+        echo "✓ Pragma SIMD build completed successfully!"
+
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Check file permissions
+      run: |
+        # Check that shell scripts are executable
+        find scripts -name "*.sh" -type f -executable | grep -q . && \
+        echo "✓ Shell scripts are executable" || \
+        echo "⚠ No executable shell scripts found"
+
+    - name: Verify directory structure
+      run: |
+        echo "Checking directory structure..."
+        [ -d "implementation_pragma" ] && echo "✓ implementation_pragma exists"
+        [ -d "implementation_metal" ] && echo "✓ implementation_metal exists"
+        [ -d "config" ] && echo "✓ config exists"
+        [ -d "tests" ] && echo "✓ tests exists"
+        [ -d "scripts" ] && echo "✓ scripts exists"
+        [ -f "Makefile" ] && echo "✓ Root Makefile exists"
+        [ -f "LICENCE" ] && echo "✓ LICENCE exists"
