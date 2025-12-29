@@ -28,9 +28,8 @@ jobs:
 
     - name: Build Pragma SIMD implementation
       run: |
-        cd implementation_pragma
-        make clean
-        make
+        make clean:pragma
+        make pragma
 
     - name: Verify binary created
       run: |
@@ -39,6 +38,31 @@ jobs:
 
     - name: Run Pragma SIMD tests
       run: |
-        cd tests
-        make clean
-        make test:correctness:pragma || echo "Tests require baseline data"
+        make clean:test:pragma
+        make test:pragma || echo "Tests require baseline data"
+
+  code-quality:
+    name: Code Quality Checks
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Check file permissions
+      run: |
+        # Check that shell scripts are executable
+        find scripts -name "*.sh" -type f -executable | grep -q . && \
+        echo "✓ Shell scripts are executable" || \
+        echo "⚠ No executable shell scripts found"
+
+    - name: Verify directory structure
+      run: |
+        echo "Checking directory structure..."
+        [ -d "implementation_pragma" ] && echo "✓ implementation_pragma exists"
+        [ -d "implementation_metal" ] && echo "✓ implementation_metal exists"
+        [ -d "config" ] && echo "✓ config exists"
+        [ -d "tests" ] && echo "✓ tests exists"
+        [ -d "scripts" ] && echo "✓ scripts exists"
+        [ -f "Makefile" ] && echo "✓ Root Makefile exists"
+        [ -f "LICENCE" ] && echo "✓ LICENCE exists"
