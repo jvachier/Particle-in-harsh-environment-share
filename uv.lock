@@ -583,6 +583,7 @@ dependencies = [
     { name = "kaleido" },
     { name = "matplotlib" },
     { name = "pandas" },
+    { name = "pillow" },
     { name = "plotly" },
 ]
 
@@ -591,6 +592,7 @@ requires-dist = [
     { name = "kaleido", specifier = ">=1.2.0" },
     { name = "matplotlib", specifier = ">=3.10.8" },
     { name = "pandas", specifier = ">=2.3.3" },
+    { name = "pillow", specifier = ">=12.0.0" },
     { name = "plotly", specifier = ">=6.5.0" },
 ]
 

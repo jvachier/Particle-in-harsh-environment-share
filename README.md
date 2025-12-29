@@ -14,6 +14,7 @@ A high-performance C++ simulation framework for modeling biolocomotion and preme
 
 - [Implementations](#implementations)
 - [Mathematical Model](#mathematical-model)
+- [Simulation Results](#simulation-results)
 - [Features](#features)
 - [Prerequisites](#prerequisites)
 - [Installation](#installation)
@@ -68,6 +69,31 @@ For the complete mathematical formulation and physical model, see the original p
 
 **Vachier J and Wettlaufer JS (2022)** Biolocomotion and Premelting in Ice. *Frontiers in Physics* 10:904836.
 **DOI:** [10.3389/fphy.2022.904836](https://doi.org/10.3389/fphy.2022.904836)
+
+## Simulation Results
+
+This simulation models particle migration in ice driven by chemotaxis. The behavior depends on the sign of the chemotaxis coefficient β (beta):
+
+- **β < 0 (Attractive)**: Particles migrate toward higher concentration regions
+- **β > 0 (Repulsive)**: Particles migrate away from higher concentration regions
+
+### Z-Axis Dynamics
+
+The figures below show concentration and density profiles along the z-axis (vertical direction through the ice column):
+
+#### Attractive Chemotaxis
+
+![Z-axis profile - Attractive](docs/images/z_profile_attractive.png)
+
+**Figure 1:** Concentration (top) and density (bottom) profiles along the z-axis for attractive chemotaxis showing particle aggregation over 300 years. Particles migrate toward regions of higher concentration, forming distinct peaks in the ice column.
+
+#### Repulsive Chemotaxis
+
+![Z-axis profile - Repulsive](docs/images/z_profile_repulsive.png)
+
+**Figure 2:** Concentration (top) and density (bottom) profiles along the z-axis for repulsive chemotaxis showing particle dispersion over 300 years. Particles migrate away from regions of higher concentration, spreading throughout the ice column.
+
+
 
 ## Features
 

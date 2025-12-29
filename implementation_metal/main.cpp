@@ -53,24 +53,7 @@ int main(int argc, char *argv[]) {
     "N100_0y_30_08_2022_betap_para.dat", "w");
   */
 
-  // beta negative - using binary format (.bin) for initial positions
-  // Create data directory if it doesn't exist
-  system("mkdir -p ../data/metal");
-
-  initialz = fopen("../data/metal/pz_z_initial_100D_"\
-    "N100_0y_30_08_2022_betan_para.bin", "wb");
-  initialx = fopen("../data/metal/px_x_initial_100D_"\
-    "N100_0y_30_08_2022_betan_para.bin", "wb");
-  initialy = fopen("../data/metal/py_y_initial_100D_"\
-    "N100_0y_30_08_2022_betan_para.bin", "wb");
-  initialcz = fopen("../data/metal/c_cz_initial_100D_"\
-    "N100_0y_30_08_2022_betan_para.bin", "wb");
-  initialcx = fopen("../data/metal/c_cx_initial_100D_"\
-    "N100_0y_30_08_2022_betan_para.bin", "wb");
-  initialcy = fopen("../data/metal/c_cy_initial_100D_"\
-    "N100_0y_30_08_2022_betan_para.bin", "wb");
-
-  // Load parameters from runtime config
+  // Load parameters from runtime config first
   double z_0 = config.chemistry.z_0;
   double AA = config.get_AA();
   double BB = config.get_BB();
@@ -88,6 +71,41 @@ int main(int argc, char *argv[]) {
   double norm1 = config.get_norm1();
   double norm2 = config.get_norm2();
 
+  // Determine beta suffix based on sign and open initial files
+  system("mkdir -p ../data/metal");
+  const char* beta_suffix = (beta < 0) ? "betan" : "betap";
+  char initial_file[200];
+
+  snprintf(initial_file, sizeof(initial_file),
+    "../data/metal/pz_z_initial_100D_N100_0y_30_08_2022_%s_para.bin",
+    beta_suffix);
+  initialz = fopen(initial_file, "wb");
+
+  snprintf(initial_file, sizeof(initial_file),
+    "../data/metal/px_x_initial_100D_N100_0y_30_08_2022_%s_para.bin",
+    beta_suffix);
+  initialx = fopen(initial_file, "wb");
+
+  snprintf(initial_file, sizeof(initial_file),
+    "../data/metal/py_y_initial_100D_N100_0y_30_08_2022_%s_para.bin",
+    beta_suffix);
+  initialy = fopen(initial_file, "wb");
+
+  snprintf(initial_file, sizeof(initial_file),
+    "../data/metal/c_cz_initial_100D_N100_0y_30_08_2022_%s_para.bin",
+    beta_suffix);
+  initialcz = fopen(initial_file, "wb");
+
+  snprintf(initial_file, sizeof(initial_file),
+    "../data/metal/c_cx_initial_100D_N100_0y_30_08_2022_%s_para.bin",
+    beta_suffix);
+  initialcx = fopen(initial_file, "wb");
+
+  snprintf(initial_file, sizeof(initial_file),
+    "../data/metal/c_cy_initial_100D_N100_0y_30_08_2022_%s_para.bin",
+    beta_suffix);
+  initialcy = fopen(initial_file, "wb");
+
   double *advection = new double[nz];
   double *reaction = new double[nz];
   double *diffusion = new double[nz];
@@ -104,8 +122,6 @@ int main(int argc, char *argv[]) {
   double Cxx = dt / (dx * dx);
   double Cyy = dt / (dy * dy);
   double Czz = dt / (dz * dz);
-  double u_x = 0.0, u_y = 0.0, u_z = 0.0, u_xx = 0.0, u_yy = 0.0, u_zz = 0.0;
-  double c_x = 0.0, c_y = 0.0, c_z = 0.0, c_xx = 0.0, c_yy = 0.0, c_zz = 0.0;
   int count, bound;
 
   // Open MP to get execution time
@@ -171,22 +187,23 @@ int main(int argc, char *argv[]) {
     snprintf(namecx, sizeof(namecx), "./data/cx_100D_N100_"\
       "30_08_2022_betap_para_%d.dat", year);
     */
-    // beta negative - using binary format (.bin) for faster I/O and smaller files
+    // Using binary format (.bin) for faster I/O and smaller files
+    // Suffix determined by beta sign (betan/betap)
 
     snprintf(namepz, sizeof(namepz), "../data/metal/pz_100D_N100_"\
-      "30_08_2022_betan_para_%d.bin", year);
+      "30_08_2022_%s_para_%d.bin", beta_suffix, year);
     snprintf(namepx, sizeof(namepx), "../data/metal/px_100D_N100_"\
-      "30_08_2022_betan_para_%d.bin", year);
+      "30_08_2022_%s_para_%d.bin", beta_suffix, year);
     char namepy[100];
     snprintf(namepy, sizeof(namepy), "../data/metal/py_100D_N100_"\
-      "30_08_2022_betan_para_%d.bin", year);
+      "30_08_2022_%s_para_%d.bin", beta_suffix, year);
     snprintf(namecz, sizeof(namecz), "../data/metal/cz_100D_N100_"\
-      "30_08_2022_betan_para_%d.bin", year);
+      "30_08_2022_%s_para_%d.bin", beta_suffix, year);
     snprintf(namecx, sizeof(namecx), "../data/metal/cx_100D_N100_"\
-      "30_08_2022_betan_para_%d.bin", year);
+      "30_08_2022_%s_para_%d.bin", beta_suffix, year);
     char namecy[100];
     snprintf(namecy, sizeof(namecy), "../data/metal/cy_100D_N100_"\
-      "30_08_2022_betan_para_%d.bin", year);
+      "30_08_2022_%s_para_%d.bin", beta_suffix, year);
 
     fpz = fopen(namepz, "wb");
     fpx = fopen(namepx, "wb");
