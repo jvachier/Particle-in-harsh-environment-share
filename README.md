@@ -1,5 +1,6 @@
 # Particle in Harsh Environment
 
+[![CI/CD Pipeline](https://github.com/jvachier/Particle-in-harsh-environment-share/workflows/CI%2FCD%20Pipeline/badge.svg)](https://github.com/jvachier/Particle-in-harsh-environment-share/actions)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Language](https://img.shields.io/badge/language-C++17-blue.svg)](https://isocpp.org/)
 [![OpenMP](https://img.shields.io/badge/parallel-OpenMP-orange.svg)](https://www.openmp.org/)

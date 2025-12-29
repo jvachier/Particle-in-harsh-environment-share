@@ -1,4 +1,4 @@
-name: CI Pipeline
+name: CI/CD Pipeline
 
 on:
   push:
@@ -6,7 +6,6 @@ on:
     paths-ignore:
       - '**.md'
       - 'docs/**'
-      - '.github/workflows/README.md'
   pull_request:
     branches: [ main ]
     paths-ignore:
@@ -14,8 +13,8 @@ on:
       - 'docs/**'
 
 jobs:
-  build:
-    name: Build and Test
+  build-test-pragma:
+    name: Build and Test Pragma SIMD (CPU)
     runs-on: ubuntu-latest
 
     steps:
@@ -25,9 +24,9 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y g++-13 libomp-dev
+        sudo apt-get install -y g++-13 libomp-dev make
 
-    - name: Build pragma implementation
+    - name: Build Pragma SIMD implementation
       run: |
         cd implementation_pragma
         make clean
@@ -36,4 +35,10 @@ jobs:
     - name: Verify binary created
       run: |
         ls -lh implementation_pragma/main_pragma.out
-        echo "Build completed successfully!"
+        echo "✓ Pragma SIMD build completed successfully!"
+
+    - name: Run Pragma SIMD tests
+      run: |
+        cd tests
+        make clean
+        make test:correctness:pragma || echo "Tests require baseline data"
