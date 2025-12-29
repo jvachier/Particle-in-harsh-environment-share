@@ -1,11 +1,12 @@
 #!/bin/bash
 # Performance comparison: Pragma SIMD vs Metal GPU
-# Usage: ./compare_performance.sh
+# Usage: ./scripts/compare_performance.sh
 
 set -e  # Exit on error
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd "$SCRIPT_DIR"
+ROOT_DIR="$(dirname "$SCRIPT_DIR")"
+cd "$ROOT_DIR"
 
 # Colors for output
 RED='\033[0;31m'
@@ -190,7 +191,7 @@ echo "  cat pragma_timing.log"
 echo "  cat metal_timing.log"
 echo ""
 echo "To visualize output data:"
-echo "  cd tools"
+echo "  cd scripts"
 echo "  # Pragma SIMD results:"
 echo "  uv run python visualize_simulation.py ../data/pragma/*.bin"
 echo "  # Metal GPU results:"

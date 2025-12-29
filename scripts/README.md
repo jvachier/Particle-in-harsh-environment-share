@@ -24,7 +24,7 @@ uv add plotly kaleido
 #### 1D Profiles
 
 ```bash
-cd tools
+cd scripts
 uv run python visualize_simulation.py ../data/metal/*.bin --plot-1d --output results_1d.html
 ```
 
