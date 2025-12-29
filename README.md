@@ -392,8 +392,6 @@ uv run python visualize_simulation.py ../data/metal/*.bin --all
 - **Interactive HTML outputs** with zoom, pan, and rotation
 - **Static PNG exports** for publications
 
-All outputs saved to `scripts/output/` directory.
-
 For detailed usage: `uv run python visualize_simulation.py --help`
 
 ## Performance
@@ -474,7 +472,21 @@ This project is based on research published in:
 
 ## Citation
 
-If you use this code in your research, please cite:
+If you use this code in your research, please cite both the software and the original paper:
+
+### Software Citation
+
+```bibtex
+@software{vachier2025particle,
+  title={Particle in Harsh Environment: High-Performance Simulation Framework},
+  author={Vachier, Jeremy},
+  year={2025},
+  url={https://github.com/jvachier/Particle-in-harsh-environment-share},
+  note={C++ implementation with OpenMP SIMD and Metal GPU acceleration}
+}
+```
+
+### Original Research Paper
 
 ```bibtex
 @article{vachier2022biolocomotion,
