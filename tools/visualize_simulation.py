@@ -221,198 +221,6 @@ def plot_1d_profiles(data_list: List[SimulationData], output_dir: str = "./plots
             print(f"✓ Saved {output_file}")
 
 
-def plot_3d_animated(data_list: List[SimulationData], output_dir: str = ".", max_years: int = 300):
-    """Create animated 3D visualizations using 1D profile data (0→max_years)
-
-    Creates 3D scatter/line plots showing spatial distribution over time.
-    """
-    # Organize data by field type and axis
-    data_dict = {"c": {"x": [], "y": [], "z": []}, "p": {"x": [], "y": [], "z": []}}
-
-    for data in data_list:
-        # Filter: only include timesteps up to max_years
-        if data.timestep > max_years:
-            continue
-
-        if data.field_type in data_dict and data.axis in data_dict[data.field_type]:
-            data_dict[data.field_type][data.axis].append(data)
-
-    # Sort by timestep
-    for field_type in data_dict:
-        for axis in data_dict[field_type]:
-            data_dict[field_type][axis].sort(key=lambda d: d.timestep)
-
-    field_names = {"c": "Concentration", "p": "Density"}
-
-    # Create animated 3D surface plots for each field type
-    for field_type in ["c", "p"]:
-        z_data = data_dict[field_type]["z"]
-        x_data = data_dict[field_type]["x"]
-        y_data = data_dict[field_type]["y"]
-
-        if not z_data:
-            print(f"No z-data for {field_type}")
-            continue
-
-        timesteps = sorted(set(d.timestep for d in z_data))
-        if not timesteps:
-            continue
-
-        # Create frames for animation
-        frames = []
-
-        for timestep in timesteps:
-            # Find data for this timestep
-            z_dataset = next((d for d in z_data if d.timestep == timestep), None)
-            x_dataset = next((d for d in x_data if d.timestep == timestep), None)
-            y_dataset = next((d for d in y_data if d.timestep == timestep), None)
-
-            if not z_dataset:
-                continue
-
-            # Normalize data
-            z_normalized = 2.0 * z_dataset.values / np.sum(z_dataset.values)
-
-            # Create surface from 1D profiles
-            if x_dataset and y_dataset:
-                x_norm = 2.0 * x_dataset.values / np.sum(x_dataset.values)
-                y_norm = 2.0 * y_dataset.values / np.sum(y_dataset.values)
-
-                # Create 2D surface: outer product of x and y profiles
-                X, Y = np.meshgrid(x_dataset.positions, y_dataset.positions)
-
-                # Different strategies for concentration vs density
-                if field_type == "p":
-                    # For density (highly anisotropic): sum of 1D profiles
-                    # This creates a surface where the height represents combined probability
-                    xy_sum = np.zeros((len(y_norm), len(x_norm)))
-                    for i in range(len(y_norm)):
-                        for j in range(len(x_norm)):
-                            # Add contributions from x and y profiles
-                            xy_sum[i, j] = x_norm[j] + y_norm[i]
-
-                    # Normalize and scale to make visible
-                    if xy_sum.max() > 0:
-                        Z_surface = (xy_sum / xy_sum.max()) * 0.1  # Scale to 0.1 max height
-                    else:
-                        Z_surface = xy_sum
-                else:
-                    # For concentration: use outer product (works well for c)
-                    xy_product = np.outer(y_norm, x_norm)
-                    if xy_product.max() > 0:
-                        xy_product_normalized = xy_product / xy_product.max()
-                    else:
-                        xy_product_normalized = xy_product
-                    Z_surface = xy_product_normalized * z_normalized.max()
-
-            else:
-                # Fallback: use z-profile value across xy plane
-                n_points = 50
-                x_range = np.linspace(0, 10, n_points)
-                y_range = np.linspace(0, 10, n_points)
-                X, Y = np.meshgrid(x_range, y_range)
-                Z_surface = np.ones_like(X) * z_normalized[len(z_dataset.positions) // 2]
-
-            # Create 3D surface plot
-            frame_data = go.Surface(
-                x=X,
-                y=Y,
-                z=Z_surface,
-                colorscale='Viridis' if field_type == 'c' else 'Plasma',
-                showscale=True,
-                colorbar=dict(title=f"{field_names[field_type]}<br>(Normalized)"),
-                name=f"t={timestep}y",
-                hovertemplate='x: %{x:.2f}m<br>y: %{y:.2f}m<br>value: %{z:.4f}<extra></extra>'
-            )
-
-            frames.append(go.Frame(
-                data=[frame_data],
-                name=str(timestep),
-                layout=go.Layout(title_text=f"{field_names[field_type]} Surface (t={timestep} years)")
-            ))
-
-        if not frames:
-            print(f"No frames created for {field_type}")
-            continue
-
-        # Create initial figure with first frame
-        fig = go.Figure(
-            data=[frames[0].data[0]],
-            frames=frames
-        )
-
-        # Add animation controls
-        fig.update_layout(
-            title=f"{field_names[field_type]} Surface Evolution (0→{max_years} years)",
-            scene=dict(
-                xaxis_title="x (m)",
-                yaxis_title="y (m)",
-                zaxis_title=f"{field_names[field_type]} (Normalized)",
-                camera=dict(eye=dict(x=1.5, y=1.5, z=1.3)),
-                aspectmode='cube'
-            ),
-            updatemenus=[{
-                "buttons": [
-                    {
-                        "args": [None, {"frame": {"duration": 500, "redraw": True},
-                                       "fromcurrent": True,
-                                       "transition": {"duration": 300}}],
-                        "label": "▶ Play",
-                        "method": "animate"
-                    },
-                    {
-                        "args": [[None], {"frame": {"duration": 0, "redraw": True},
-                                         "mode": "immediate",
-                                         "transition": {"duration": 0}}],
-                        "label": "⏸ Pause",
-                        "method": "animate"
-                    }
-                ],
-                "direction": "left",
-                "pad": {"r": 10, "t": 87},
-                "showactive": False,
-                "type": "buttons",
-                "x": 0.1,
-                "xanchor": "right",
-                "y": 0,
-                "yanchor": "top"
-            }],
-            sliders=[{
-                "active": 0,
-                "yanchor": "top",
-                "y": 0.05,
-                "xanchor": "left",
-                "currentvalue": {
-                    "prefix": "Year: ",
-                    "visible": True,
-                    "xanchor": "right"
-                },
-                "pad": {"b": 10, "t": 50},
-                "len": 0.9,
-                "x": 0.1,
-                "steps": [
-                    {
-                        "args": [[f.name], {
-                            "frame": {"duration": 300, "redraw": True},
-                            "mode": "immediate",
-                            "transition": {"duration": 300}
-                        }],
-                        "label": str(timesteps[i]),
-                        "method": "animate"
-                    }
-                    for i, f in enumerate(frames)
-                ]
-            }],
-            width=1200,
-            height=900
-        )
-
-        output_file = f"{output_dir}/{field_type}_3d_surface_animation.html"
-        fig.write_html(output_file)
-        print(f"✓ Saved {output_file}")
-
-
-
 def main():
     parser = argparse.ArgumentParser(
         description="Visualization of particle simulation data"
@@ -420,7 +228,9 @@ def main():
     parser.add_argument(
         "files", nargs="*", help="Binary data files (default: ../data/metal/*.bin)"
     )
-    parser.add_argument("--output-dir", "-o", default=None, help="Output directory (default: ../plots/)")
+    parser.add_argument(
+        "--output-dir", "-o", default=None, help="Output directory (default: ../plots/)"
+    )
 
     args = parser.parse_args()
 
@@ -435,7 +245,6 @@ def main():
         if not args.files:
             print("Error: No binary files found in ../data/metal/")
             print("Usage: uv run python visualize_simulation.py [files...]")
-            return 1
 
     # Set default output directory relative to script location
     if args.output_dir is None:
@@ -454,18 +263,12 @@ def main():
 
     if not data_list:
         print("Error: No valid data")
-        return 1
 
     # Create output directory
     os.makedirs(args.output_dir, exist_ok=True)
 
     # Always generate all 1D plots
     plot_1d_profiles(data_list, args.output_dir)
-
-    # Generate 3D animated plots (0→300 years)
-    plot_3d_animated(data_list, args.output_dir, max_years=300)
-
-    return 0
 
 
 if __name__ == "__main__":

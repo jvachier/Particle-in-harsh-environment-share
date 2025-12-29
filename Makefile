@@ -32,7 +32,7 @@ ifeq ($(UNAME_S),Darwin)
 	METAL_CFLAGS = -Wall -g -Xpreprocessor -fopenmp -I/opt/homebrew/opt/libomp/include -Wno-pass-failed
 	METAL_LDFLAGS = -L/opt/homebrew/opt/libomp/lib -lomp -framework Metal -framework Foundation
 	METAL_OBJC_COMPILER = clang++ -x objective-c++ -O3 -std=c++17 -stdlib=libc++
-	METAL_SPECIFIC_OBJS = $(METAL_DIR)/concentration_field_density_metal.o $(METAL_DIR)/concentration_field_metal.o
+	METAL_SPECIFIC_OBJS = $(METAL_DIR)/concentration_field_density_metal.o $(METAL_DIR)/concentration_field_metal.o $(METAL_DIR)/gpu_pipeline_metal.o
 else
 	METAL_CC = g++-14 -O3 -std=c++17
 	METAL_CFLAGS = -Wall -g -fopenmp -fopenmp-simd
@@ -98,6 +98,10 @@ $(METAL_DIR)/concentration_field_density_metal.o: $(METAL_DIR)/concentration_fie
 
 $(METAL_DIR)/concentration_field_metal.o: $(METAL_DIR)/concentration_field_metal.mm
 	@echo "Compiling Metal GPU kernel (concentration_field_metal.mm)..."
+	$(METAL_OBJC_COMPILER) $(METAL_CFLAGS) -c $< -o $@
+
+$(METAL_DIR)/gpu_pipeline_metal.o: $(METAL_DIR)/gpu_pipeline_metal.mm
+	@echo "Compiling Metal GPU pipeline (gpu_pipeline_metal.mm)..."
 	$(METAL_OBJC_COMPILER) $(METAL_CFLAGS) -c $< -o $@
 endif
 

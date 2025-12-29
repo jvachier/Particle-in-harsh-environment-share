@@ -70,7 +70,7 @@ struct TimeParameters {
                                     // Default: 15,768 steps = ~50 years
                                     // (at dt=1e5, ~316 steps/year)
 
-    int num_years = 12;              // Number of iterations (alpha parameter)
+    int num_years = 6;              // Number of iterations (alpha parameter)
                                     // Total simulation = num_years × nt steps
 
     // Helper functions for clarity

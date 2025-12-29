@@ -25,6 +25,7 @@
 #include "headers/delocate_memory.h"
 #include "headers/print_position.h"
 #include "headers/print_initial_position.h"
+#include "headers/gpu_pipeline.h"
 
 using namespace std;
 using namespace SimulationConfig;
@@ -136,6 +137,15 @@ int main(int argc, char *argv[]) {
 
   printf("done with initialization\n");
 
+#ifdef __APPLE__
+  // Initialize GPU pipeline - transfer all data to GPU once
+  printf("Initializing GPU pipeline...\n");
+  if (!gpu_pipeline_init_buffers(c, c_n, f, f_n, advection, reaction, diffusion, nx, ny, nz)) {
+    fprintf(stderr, "Error: GPU pipeline initialization failed\n");
+    return -1;
+  }
+#endif
+
   printf("start of the time loop\n");
   count = 1;
   bound = 0;
@@ -186,25 +196,17 @@ int main(int argc, char *argv[]) {
     fcy = fopen(namecy, "wb");
 
     for (n = bound; n < count * nt; n++) {
-      // old value to the new one
+#ifdef __APPLE__
+      // GPU PIPELINE: All three kernels run on GPU, data stays on GPU
+      // oldtonew, concentration_field, concentration_field_density all in one command buffer
+      gpu_pipeline_execute_iteration(
+        nx, ny, nz, D_c, Cxx, Cyy, Czz,
+        dt, beta, Cx, Cy, Cz, Fx, Fy, Fz, Fxx, Fyy, Fzz);
+#else
+      // CPU version for non-Apple platforms
       oldtonew(c_n, f_n, c, f, nx, ny, nz);
-
-      // update new value - concentration field
-      // Use CPU version - simple operation, not worth GPU transfer overhead
       concentration_field(c_n, c, nx, ny, nz,
         c_xx, c_yy, c_zz, D_c, Cxx, Cyy, Czz);
-
-#ifdef __APPLE__
-      // Use Metal GPU accelerated version for density
-      concentration_field_density_metal(
-        c, f, f_n, advection, reaction,
-        diffusion, nx, ny, nz, dt, beta,
-        c_x, c_y, c_z, c_xx, c_yy, c_zz,
-        u_x, u_y, u_z, u_xx, u_yy, u_zz,
-        Cx, Cy, Cz, Cxx, Cyy, Czz, Fx, Fy,
-        Fz, Fxx, Fyy, Fzz);
-#else
-      // Fallback to CPU version on non-Apple platforms
       concentration_field_density(
         c, f, f_n, advection, reaction,
         diffusion, nx, ny, nz, dt, beta,
@@ -214,6 +216,12 @@ int main(int argc, char *argv[]) {
         Fz, Fxx, Fyy, Fzz);
 #endif
     }
+
+#ifdef __APPLE__
+    // Read results from GPU to CPU for output
+    gpu_pipeline_read_results(c, f, nx, ny, nz);
+#endif
+
     // print out the z and x components
     // Using improved version with configurable sample points
     print_position(
@@ -232,6 +240,11 @@ int main(int argc, char *argv[]) {
   }
 
   printf("Simulation Done\n");
+
+#ifdef __APPLE__
+  // Cleanup GPU resources
+  gpu_pipeline_cleanup();
+#endif
 
   // deallocate memory
   delocate_memory(
