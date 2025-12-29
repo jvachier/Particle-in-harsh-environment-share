@@ -52,7 +52,7 @@ METAL_OBJS = $(METAL_DIR)/main.o $(METAL_DIR)/oldtonew.o \
 # ============================================================================
 # Targets
 # ============================================================================
-.PHONY: all pragma metal clean test benchmark help compare run-pragma run-metal rebuild
+.PHONY: all pragma metal clean clean-pragma clean-metal test benchmark help compare run-pragma run-metal rebuild
 
 # Default target
 all: pragma metal
@@ -112,9 +112,19 @@ clean:
 	@echo "Cleaning all builds..."
 	@rm -f $(PRAGMA_DIR)/*.o $(PRAGMA_DIR)/*.out
 	@rm -f $(METAL_DIR)/*.o $(METAL_DIR)/*.out
-	@rm -f tests/*.o tests/*.out
+	@cd tests && $(MAKE) clean
 	@rm -f *.log performance_summary.txt
 	@echo "Clean complete"
+
+clean-pragma:
+	@echo "Cleaning pragma build..."
+	@rm -f $(PRAGMA_DIR)/*.o $(PRAGMA_DIR)/*.out
+	@echo "Pragma clean complete"
+
+clean-metal:
+	@echo "Cleaning metal build..."
+	@rm -f $(METAL_DIR)/*.o $(METAL_DIR)/*.out
+	@echo "Metal clean complete"
 
 # ============================================================================
 # Tests and Benchmarks

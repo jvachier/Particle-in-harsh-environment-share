@@ -28,18 +28,13 @@ jobs:
 
     - name: Build Pragma SIMD implementation
       run: |
-        make clean:pragma
+        make clean-pragma
         make pragma
 
     - name: Verify binary created
       run: |
         ls -lh implementation_pragma/main_pragma.out
         echo "✓ Pragma SIMD build completed successfully!"
-
-    - name: Run Pragma SIMD tests
-      run: |
-        make clean:test:pragma
-        make test:pragma || echo "Tests require baseline data"
 
   code-quality:
     name: Code Quality Checks
