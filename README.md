@@ -57,38 +57,17 @@ This repository provides two optimized implementations:
 
 ## Mathematical Model
 
-The simulation models the dynamics of microorganisms in ice through coupled partial differential equations for concentration and density fields.
-
-### Governing Equations
-
-The system is described by two coupled PDEs:
-
-**Concentration field (c):**
-```
-∂c/∂t = D_c ∇²c
-```
-
-**Density field with chemotaxis (ρ):**
-```
-∂ρ/∂t = -∇·(χρ∇c) + D_ρ ∇²ρ + R(ρ)
-```
-
-Where:
-- `c(x,y,z,t)` is the concentration field
-- `ρ(x,y,z,t)` is the particle density
-- `D_c, D_ρ` are diffusion coefficients
-- `χ` is the chemotaxis coefficient (β in code)
-- `R(ρ)` is the reaction term
-- `∇²` is the Laplacian operator
-
-### Numerical Method
+This implementation solves coupled partial differential equations for biolocomotion and premelting dynamics in ice. The numerical method uses:
 
 - **Discretization:** Finite difference method on uniform 3D grid
 - **Time integration:** Forward Euler scheme
 - **Spatial derivatives:** Second-order central differences
 - **Boundary conditions:** Periodic or fixed (configurable)
 
-For detailed mathematical formulation, see [docs/mathematics.md](docs/mathematics.md).
+For the complete mathematical formulation and physical model, see the original paper:
+
+**Vachier J and Wettlaufer JS (2022)** Biolocomotion and Premelting in Ice. *Frontiers in Physics* 10:904836.
+**DOI:** [10.3389/fphy.2022.904836](https://doi.org/10.3389/fphy.2022.904836)
 
 ## Features
 
@@ -454,13 +433,6 @@ The Metal implementation achieves high performance through:
 # Run all tests
 make test
 
-# Or run individually:
-cd tests
-
-# Verify both implementations produce identical results
-make test:correctness:pragma
-make test:correctness:metal
-
 # Performance benchmarks
 make benchmark
 ```
@@ -468,16 +440,6 @@ make benchmark
 ## License
 
 This project is licensed under the **Apache License 2.0**. See [LICENSE](LICENSE) file for details.
-
-You are free to:
-- **Use** - Use the software for any purpose
-- **Modify** - Modify the source code
-- **Distribute** - Distribute original or modified versions
-- **Patent Grant** - Receive patent rights from contributors
-
-Under the following terms:
-- **Attribution** - Must provide proper credit and license notice
-- **State Changes** - Must document modifications made to the code
 
 This project is based on research published in:
 
